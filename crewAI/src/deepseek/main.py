@@ -4,7 +4,7 @@ import warnings
 
 from datetime import datetime
 
-from crew import Deepseek
+from crew import LLM
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
@@ -18,12 +18,12 @@ def run():
     Run the crew.
     """
     inputs = {
-        'topic': 'deepseek-r1:32b',
+        'topic': 'Open AI',
         'current_year': str(datetime.now().year)
     }
     
     try:
-        Deepseek().crew().kickoff(inputs=inputs)
+        LLM().crew().kickoff(inputs=inputs)
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
 
@@ -37,7 +37,7 @@ def train():
         'current_year': str(datetime.now().year)
     }
     try:
-        Deepseek().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
+        LLM().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
 
     except Exception as e:
         raise Exception(f"An error occurred while training the crew: {e}")
@@ -47,7 +47,7 @@ def replay():
     Replay the crew execution from a specific task.
     """
     try:
-        Deepseek().crew().replay(task_id=sys.argv[1])
+        LLM().crew().replay(task_id=sys.argv[1])
 
     except Exception as e:
         raise Exception(f"An error occurred while replaying the crew: {e}")
@@ -62,7 +62,7 @@ def test():
     }
     
     try:
-        Deepseek().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
+        LLM().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
 
     except Exception as e:
         raise Exception(f"An error occurred while testing the crew: {e}")

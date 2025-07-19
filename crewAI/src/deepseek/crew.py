@@ -1,22 +1,20 @@
-from crewai import Agent, Crew, Process, Task, LLM
+from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
+from llm import deepseek_ollama
 # If you want to run a snippet of code before or after the crew starts,
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
 
 @CrewBase
-class Deepseek():
-    """Deepseek crew"""
+class LLM():
+    """LLM crew"""
 
     agents: List[BaseAgent]
     tasks: List[Task]
     
-    deepseek_ollama = LLM(
-        model='ollama/deepseek-r1:32b',  # Make sure to pull the model
-        base_url='http://localhost:11434',  # Ollama server URL
-    )
+    llm = deepseek_ollama
 
     # Learn more about YAML configuration files here:
     # Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
@@ -29,7 +27,7 @@ class Deepseek():
         return Agent(
             config=self.agents_config['researcher'], # type: ignore[index]
             verbose=True,
-            llm=self.deepseek_ollama,  # Use the Deepseek model for this agent
+            llm=self.llm,  # Use the Deepseek model for this agent
         )
 
     @agent
@@ -37,7 +35,7 @@ class Deepseek():
         return Agent(
             config=self.agents_config['reporting_analyst'], # type: ignore[index]
             verbose=True,
-            llm=self.deepseek_ollama,  # Use the Deepseek model for this agent
+            llm=self.llm,  # Use the Deepseek model for this agent
         )
 
     # To learn more about structured task outputs,
@@ -58,7 +56,7 @@ class Deepseek():
 
     @crew
     def crew(self) -> Crew:
-        """Creates the Deepseek crew"""
+        """Creates the LLM crew"""
         # To learn how to add knowledge sources to your crew, check out the documentation:
         # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 
