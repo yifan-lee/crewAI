@@ -1,17 +1,16 @@
 research_task:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
+    针对 {topic} 开展深入研究。
+    请确保结合当前年份 {current_year}，查找所有有趣且相关的信息。
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
+    一份包含 10 条要点的列表，列出关于 {topic} 最相关的信息。
   agent: researcher
 
 reporting_task:
   description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    审阅你获得的上下文内容，并将每个主题扩展成完整的报告章节。
+    报告应详细且全面，包含所有相关信息。
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
+    一篇格式为 markdown 的完整报告，每个主要主题都有对应的详细章节。
+    格式为 markdown，但不要包含 '```'。
   agent: reporting_analyst

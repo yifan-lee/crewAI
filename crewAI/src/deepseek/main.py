@@ -19,8 +19,7 @@ def run():
     """
     inputs = {
         'topic': 'deepseek-r1:32b',
-        'current_year': '2023'
-        # 'current_year': str(datetime.now().year)
+        'current_year': str(datetime.now().year)
     }
     
     try:
