@@ -18,12 +18,16 @@ def run():
     Run the crew.
     """
     inputs = {
-        'topic': 'Open AI',
+        'stock': 'Apple Inc.',
         'current_year': str(datetime.now().year)
     }
     
     try:
-        LLM().crew().kickoff(inputs=inputs)
+        result = LLM().crew().kickoff(inputs=inputs)
+        with open("output.md", "w", encoding="utf-8") as f:
+            f.write(str(result))  # 转为 Markdown 写入
+            f.write("\n")
+        print("✅ Output saved to output.md")
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
 

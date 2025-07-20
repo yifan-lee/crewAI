@@ -1,9 +1,9 @@
 research_task:
   description: >
-    针对 {topic} 开展深入研究。
-    请确保结合当前年份 {current_year}，查找所有有趣且相关的信息。
+    针对 {stock} 股价变化开展深入研究。
+    请确保结合当前年份 {current_year}以及最近十年的数据，查找所有相关的信息。
   expected_output: >
-    一份包含 10 条要点的列表，列出关于 {topic} 最相关的信息。
+    一份包含 10 条要点的列表，列出关于 {stock} 最相关的信息。
   agent: researcher
 
 reporting_task:
