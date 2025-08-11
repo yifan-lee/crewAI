@@ -12,6 +12,40 @@ from crewai.tools import BaseTool
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
 # === Custom tool: generate PPT and charts from a structured JSON string to outputs/figures ===
+class MakeChartsInput(BaseModel):
+    spec: Union[str, dict] = Field(..., description="JSON string or dict with {'charts':[{'title','type','data':[{'x','y'}]}]}.")
+
+class MakeChartsTool(BaseTool):
+    name: str = "make_charts"
+    description: str = "Render charts to ./outputs/figures/*.png from a chart spec JSON."
+    args_schema: Type[BaseModel] = MakeChartsInput
+
+    def _run(self, spec: Union[str, dict]) -> str:
+        import json, os
+        from pathlib import Path
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
+        payload = json.loads(spec) if isinstance(spec, str) else spec
+        charts = payload.get("charts", [])
+        out_dir = Path("./outputs"); out_dir.mkdir(parents=True, exist_ok=True)
+        fig_dir = out_dir / "figures"; fig_dir.mkdir(parents=True, exist_ok=True)
+
+        paths = []
+        for i, ch in enumerate(charts, 1):
+            title = ch.get("title", f"Chart {i}")
+            ctype = (ch.get("type") or "line").lower()
+            data = ch.get("data", [])
+            df = pd.DataFrame(data)
+            if not {"x","y"}.issubset(df.columns):
+                continue
+            plt.figure()
+            plt.plot(df["x"], df["y"]) if ctype == "line" else plt.bar(df["x"], df["y"])
+            plt.title(title); plt.tight_layout()
+            p = fig_dir / f"chart_{i}.png"
+            plt.savefig(p); plt.close()
+            paths.append(str(p))
+        return json.dumps({"figure_paths": paths})
 class MakePPTInput(BaseModel):
     json_input: Union[str, dict] = Field(..., description="A JSON string or dict with title/sections/charts/sources.")
 
@@ -30,9 +64,12 @@ class MakePPTAndChartsTool(BaseTool):
         from pptx import Presentation
         from pptx.util import Inches
 
-        # Parse JSON
+        # Parse JSON (supports both str and dict)
         try:
-            payload = json.loads(json_input)
+            if isinstance(json_input, str):
+                payload = json.loads(json_input)
+            else:
+                payload = json_input  # already a dict
         except Exception as e:
             return f"[ReportPPTTool] JSON parse failed: {e}"
 
@@ -158,6 +195,41 @@ class Deepseek():
             tools=[MakePPTAndChartsTool()],  # ← 挂上PPT+图表工具
         )
 
+    @agent
+    def summary_md_writer(self) -> Agent:
+        return Agent(
+            config=self.agents_config['summary_md_writer'],
+            verbose=True,
+            llm=self.llm,
+        )
+
+    @agent
+    def chart_maker(self) -> Agent:
+        # 需要一个“生成图片”的工具（见下一节“作图工具”）
+        return Agent(
+            config=self.agents_config['chart_maker'],
+            verbose=True,
+            llm=self.llm,
+            tools=[MakeChartsTool()],  # 见下文
+        )
+
+    @agent
+    def ppt_json_writer(self) -> Agent:
+        return Agent(
+            config=self.agents_config['ppt_json_writer'],
+            verbose=True,
+            llm=self.llm,
+        )
+
+    @agent
+    def slide_builder(self) -> Agent:
+        return Agent(
+            config=self.agents_config['slide_builder'],
+            verbose=True,
+            llm=self.llm,
+            tools=[MakePPTAndChartsTool()],  # 你已有
+        )
+        
     # To learn more about structured task outputs,
     # task dependencies, and task callbacks, check out the documentation:
     # https://docs.crewai.com/concepts/tasks#overview-of-a-task
@@ -190,6 +262,37 @@ class Deepseek():
             output_file='./outputs/builder_output.md'
         )
     
+    @task
+    def summary_md_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['summary_md_task'],
+            output_file='./outputs/summary.md',
+            context=[self.researching_task()],  # 让它能看到研究结果
+        )
+
+    @task
+    def charting_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['charting_task'],
+            output_file='./outputs/charts.json',
+            context=[self.summary_md_task()],  # 用 MD 作为输入
+        )
+
+    @task
+    def ppt_json_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['ppt_json_task'],
+            output_file='./outputs/ppt_payload.json',
+            context=[self.summary_md_task(), self.charting_task()],  # 同时看 summary 和 charts
+        )
+
+    @task
+    def slide_build_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['slide_build_task'],
+            output_file='./outputs/slide_build_log.md',
+            context=[self.ppt_json_task()],  # 用最终 JSON 去调用 PPT 工具
+        )
 
     @crew
     def crew(self) -> Crew:

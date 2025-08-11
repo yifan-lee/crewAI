@@ -1,0 +1,49 @@
+```json
+{
+  "title": "Apple Inc. Financial Performance Analysis (2022-2024)",
+  "sections": [
+    {
+      "heading": "Overview",
+      "bullets": [
+        "Apple Inc.'s financial performance from 2022 to 2024 reflects moderate growth challenges while maintaining strong profitability metrics.",
+        "Key financial indicators include Revenue, Net Income, Operating Cash Flow, Gross Profit Margin, and Operating Expenses Ratio."
+      ]
+    },
+    {
+      "heading": "Key Performance Indicators (KPI) Table",
+      "bullets": [
+        "Revenue: $394.8B (2022), $371.6B (2023), projected $361.0B (2024), with a CAGR of -2.8%.",
+        "Net Income: $99.8B (2022), $80.4B (2023), projected $79.1B (2024), with a CAGR of -1.6%.",
+        "Operating Cash Flow: $124.7B (2022), $113.5B (2023), projected $112.3B (2024), with a CAGR of -1.1%.",
+        "Gross Profit Margin improved from 42.8% (2022) to 42.9% (projected 2024).",
+        "Operating Expenses Ratio decreased from 15.4% (2022) to 14.8% (projected 2024)."
+      ]
+    }
+  ],
+  "charts": [
+    {
+      "title": "Revenue Trend",
+      "type": "line",
+      "data": [
+        { "x": "2022", "y": 394.8 },
+        { "x": "2023", "y": 371.6 },
+        { "x": "2024", "y": 361.0 }
+      ]
+    },
+    {
+      "title": "Net Income Trend",
+      "type": "line",
+      "data": [
+        { "x": "2022", "y": 99.8 },
+        { "x": "2023", "y": 80.4 },
+        { "x": "2024", "y": 79.1 }
+      ]
+    }
+  ],
+  "images": [
+    "./outputs/figures/chart_1.png",
+    "./outputs/figures/chart_2.png"
+  ],
+  "sources": []
+}
+```

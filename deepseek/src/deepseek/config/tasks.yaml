@@ -30,8 +30,96 @@ building_task:
        }
     2) After generating the JSON, call the tool make_ppt_and_charts with the original JSON string as the input parameter;
     3) In the text output, also include a concise table (ASCII/Markdown) and a short summary for saving into the md file.
+    4) You MUST actually call the tool named make_ppt_and_charts before giving the final answer.
+       The Action Input MUST be a dictionary with the exact key "json_input".
+       If your JSON object is in memory, pass it as a JSON string (not pretty-printed code block).
+    5) Use the following ReAct call format (exactly):
+       ```
+       Thought: I will generate the JSON and then call the tool.
+       Action: make_ppt_and_charts
+       Action Input: {"json_input": "<PUT THE EXACT ONE-LINE JSON STRING HERE>"}
+       Observation: (the tool output will appear here)
+       ```
+
+       After the Observation, provide:
+       ```
+       Thought: I now can give a great answer
+       Final Answer: (include the concise table and short summary here)
+       ```
+    6) Do NOT include internal chain-of-thought or analysis in the final Markdown. Only include the table and summary.
   expected_output: >
     - A strictly valid JSON (as described above) has been passed to the make_ppt_and_charts tool and the output has been generated;
     - The text answer contains a concise table and a short summary;
     - The output ends with the tool execution receipt (including report.pptx and figures paths).
+    - The tool call appears in the transcript with Action: make_ppt_and_charts and the Action Input wrapping the JSON under the "json_input" key.
+    - The generated files exist at ./outputs/report.pptx and ./outputs/figures/.
   agent: builder
+
+summary_md_task:
+  description: >
+    Create a stand-alone Markdown summary from researching_task results.
+    Requirements:
+    - Include a concise KPI table (ASCII/Markdown) with columns: Metric, 2022, 2023, 2024, CAGR.
+    - Add 3-6 key insights as bullet points.
+    - Add a short "Data for Charts" section at the end using a parsable format, e.g.:
+      ```
+      [CHART_DATA]
+      TREND_1: year,value
+      2022, 10
+      2023, 12
+      2024, 15
+      [/CHART_DATA]
+      ```
+    Output only Markdown content (no tool calls).
+  expected_output: >
+    A Markdown document containing one KPI table, bullet insights, and a CHART_DATA block.
+  agent: summary_md_writer
+
+charting_task:
+  description: >
+    From the MD produced in summary_md_task, extract CHART_DATA blocks and emit a compact JSON spec:
+    {
+      "charts": [
+        {"title": "Metric Trend", "type": "line", "data": [{"x":"2022","y":10}, {"x":"2023","y":12}, {"x":"2024","y":15}]}
+      ]
+    }
+    Then CALL the chart tool to render images to ./outputs/figures/*.png and return the saved paths.
+    IMPORTANT:
+    - If multiple datasets exist, generate up to 2 charts.
+    - Return a JSON with {"charts": [...], "figure_paths": ["./outputs/figures/chart_1.png", ...]}.
+  expected_output: >
+    A JSON string containing "charts" and "figure_paths".
+  agent: chart_maker
+
+ppt_json_task:
+  description: >
+    Build the final PPT JSON using the MD summary and the charting JSON.
+    Schema:
+    {
+      "title": "Report title (e.g., {company_name} Key Financial Metrics and Trends)",
+      "sections": [
+        {"heading": "Key Metrics Table", "bullets": ["..."]},
+        {"heading": "Trend Analysis", "bullets": ["..."]}
+      ],
+      "charts": [
+        {"title":"Metric Trend","type":"line","data":[{"x":"2022","y":10},{"x":"2023","y":12},{"x":"2024","y":15}]}
+      ],
+      "images": ["./outputs/figures/chart_1.png"],   # optional; if present, slides should include them
+      "sources": ["(Optional) public link 1","link 2"]
+    }
+    Only output STRICT JSON (no code fences).
+  expected_output: >
+    A strictly valid JSON object following the schema above.
+  agent: ppt_json_writer
+
+slide_build_task:
+  description: >
+    CALL the tool make_ppt_and_charts with the PPT JSON from ppt_json_task.
+    The Action Input MUST be {"json_input": "<THE EXACT ONE-LINE JSON STRING>"}.
+    After Observation, confirm:
+    - Report path: ./outputs/report.pptx
+    - Figures path: ./outputs/figures/
+    Then end with a short confirmation.
+  expected_output: >
+    A short confirmation message that includes the generated file paths.
+  agent: slide_builder

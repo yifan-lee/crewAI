@@ -1,0 +1,1 @@
+The PowerPoint presentation has been successfully generated at ./outputs/report.pptx and the associated charts are saved in ./outputs/figures/.
