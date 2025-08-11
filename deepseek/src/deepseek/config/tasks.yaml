@@ -16,9 +16,22 @@ researching_task:
 
 building_task:
   description: >
-    Put the key financial metrics into a concise table, and plot a graph to visualize the trends.
-    Make sure to include the summary from researching_task as a footnote.
+    1) Organize the key metrics and summary from researching_task into the following JSON format (only include necessary fields):
+      {
+         "title": "Report title (e.g., {company_name} Key Financial Metrics and Trends)",
+         "sections": [
+           {"heading": "Key Metrics Table", "bullets": ["Briefly summarize the metrics and calculation methods", "Include the summary as one of the bullet points"]},
+           {"heading": "Trend Analysis", "bullets": ["Highlight YoY, QoQ, and CAGR changes", "Provide conclusions and risk considerations"]}
+         ],
+         "charts": [
+           {"title": "Metrics Trend", "type": "line", "data": [{"x": "2022","y": 10},{"x":"2023","y":12},{"x":"2024","y":15}]}
+         ],
+         "sources": ["(Optional) Public source link 1", "link 2"]
+       }
+    2) After generating the JSON, call the tool make_ppt_and_charts with the original JSON string as the input parameter;
+    3) In the text output, also include a concise table (ASCII/Markdown) and a short summary for saving into the md file.
   expected_output: >
-    A table and a graph showing the key financial metrics.
-    Followed by a short summary of the trends and insights.
+    - A strictly valid JSON (as described above) has been passed to the make_ppt_and_charts tool and the output has been generated;
+    - The text answer contains a concise table and a short summary;
+    - The output ends with the tool execution receipt (including report.pptx and figures paths).
   agent: builder
